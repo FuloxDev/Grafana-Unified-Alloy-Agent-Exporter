@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  alloy:
+    image: grafana/alloy:v1.10.1
+    container_name: alloy-agent
+    hostname: ${SERVER_NAME}
+    user: "0"
+    restart: unless-stopped
+
+    network_mode: host
+    
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+      - SYS_PTRACE
+      - NET_RAW
+      - SYS_ADMIN
+    #read_only: true
+    tmpfs:
+      - /tmp:rw,size=1g,noexec,nosuid,nodev
+      - /var/lib/alloy/tmp:rw,size=100m,noexec,nosuid,nodev
+    
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --server.http.ui-path-prefix=/
+      - --storage.path=/var/lib/alloy/data
+      - --stability.level=generally-available
+      - --disable-reporting=true
+      
+    # ports:
+    #   - "127.0.0.1:12345:12345"
+      
+    volumes:
+      # Configuration files
+      - ./config/accounts.alloy:/etc/alloy/config.alloy:ro
+      # - ./config/wallets.alloy:/etc/alloy/config.alloy:ro
+      # - ./config/exchange.alloy:/etc/alloy/config.alloy:ro
+      # - ./config/kafka.alloy:/etc/alloy/config.alloy:ro
+      
+      # System access for metrics
+      - /:/rootfs:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run:/var/run:ro
+      - /var/log:/var/log:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      #only for exchange
+      #- /home/lcx/lcx-trading-engine/logs:/home/lcx/lcx-trading-engine/logs:ro
+      
+      # Persistent storage
+      - alloy_data:/var/lib/alloy/data
+      
+    # networks:
+    #   - monitoring
+      
+    environment:
+      - HOSTNAME=${SERVER_NAME}
+      - ENVIRONMENT=${ENVIRONMENT}
+      
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:12345/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+      
+    labels:
+      - "monitoring.role=agent"
+      - "monitoring.security=authenticated"
+      - "server.name=${SERVER_NAME}"
+
+volumes:
+  alloy_data:
+    driver: local
+
+# networks:
+#   monitoring:
+#     driver: bridge

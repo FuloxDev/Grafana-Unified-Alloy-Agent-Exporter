@@ -1,0 +1,67 @@
+prometheus.exporter.unix "node" {
+  disable_collectors = [
+    "powersupplyclass",
+    "hwmon",
+    "arp",
+    "bcache", 
+    "bonding",
+    "btrfs",
+    "edac",
+    "fibrechannel",
+    "infiniband",
+    "ipvs",
+    "mdadm",
+    "nfs",
+    "nfsd",
+    "nvme",
+    "rapl",
+    "selinux",
+    "tapestats",
+    "textfile",
+    "thermal_zone",
+  ]
+}
+
+prometheus.remote_write "default" {
+  endpoint {
+    url = "${PROMETHEUS_URL}"
+    
+    basic_auth {
+      username = "${PROMETHEUS_USERNAME}"
+      password = "${PROMETHEUS_PASSWORD}"
+    }
+    
+    tls_config {
+      insecure_skip_verify = true
+    }
+  }
+}
+
+prometheus.scrape "server_metrics" {
+  targets = prometheus.exporter.unix.node.targets
+  scrape_interval = "15s"
+  scrape_timeout = "10s"
+  job_name = "node-exporter"
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.scrape "app_metrics" {
+  targets = [
+    {
+        #update host accordingly, use any service with exposed metrics endpoint
+      __address__ = "172.17.0.1:${APP_PORT}",
+      __metrics_path__ = "/system-stats",
+      __scheme__ = "http",
+    },
+  ]
+  
+  scrape_interval = "15s"
+  scrape_timeout = "10s"
+  job_name = "${APP_NAME}"
+  forward_to = [prometheus.remote_write.default.receiver]
+  
+  basic_auth {
+    username = "${APP_METRICS_USERNAME}"
+    password = "${APP_METRICS_PASSWORD}"
+  }
+}

@@ -1,0 +1,48 @@
+# Environment Variables
+.env
+.env.local
+.env.*.local
+*.env
+
+# Generated Configuration
+config/config.alloy
+config/*.alloy
+!config/*.alloy.tmpl
+!config/*.alloy.example
+
+# Docker Volumes
+alloy_data/
+
+# Logs
+*.log
+logs/
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# IDE Files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+Desktop.ini
+
+# Backup Files
+*.backup
+*.bak
+*.old
+
+# Test Files
+test.txt
+testing/
