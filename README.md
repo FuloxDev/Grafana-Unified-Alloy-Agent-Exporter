@@ -5,6 +5,7 @@
 [![Prometheus](https://img.shields.io/badge/Push_to-Prometheus-E6522C?logo=prometheus&logoColor=white)](https://prometheus.io/)
 
 Grafana Alloy agent for distributed metrics collection across LCX cryptocurrency exchange infrastructure. Pushes metrics to central Prometheus via remote_write API.
+Refer the Monitoring stack using Prometheus/Grafana/Loki/Alertmanager here: https://github.com/FuloxDev/Production-Monitoring-Stack---Grafana-Prometheus-Loki-Alertmanager
 
 ## 📋 Table of Contents
 
